@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>理科クイズ 早押し！</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --text:#e6edf3;--sub:#8b949e;--accent:#58a6ff;--green:#3fb950;
+  --red:#f85149;--warn:#d29922;--r:12px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Hiragino Kaku Gothic ProN','Meiryo',sans-serif}
+#app{min-height:100vh}
+/* ボタン */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 24px;border:none;border-radius:var(--r);font-size:1rem;
+  font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-blue{background:var(--accent);color:#0d1117}
+.btn-blue:hover:not(:disabled){background:#79c0ff}
+.btn-green{background:var(--green);color:#0d1117}
+.btn-green:hover:not(:disabled){background:#56d364}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover:not(:disabled){background:#ff7b72}
+.btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover:not(:disabled){background:var(--surface2)}
+.btn-lg{padding:18px 32px;font-size:1.2rem;border-radius:16px}
+.btn-sm{padding:8px 16px;font-size:.88rem;width:auto}
+/* カード */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+/* 入力 */
+input{background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  border-radius:8px;padding:10px 14px;font-size:1rem;width:100%;outline:none}
+input:focus{border-color:var(--accent)}
+label{display:block;font-size:.88rem;color:var(--sub);margin-bottom:4px}
+/* ページ共通 */
+.page{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;gap:16px;max-width:600px;margin:0 auto}
+.page-title{font-size:1.4rem;font-weight:800}
+.err{color:var(--red);font-size:.88rem}
+/* ホーム */
+.home-logo{font-size:4rem;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.home-title{font-size:2rem;font-weight:800;text-align:center}
+.home-title span{color:var(--accent)}
+/* アカウントバー */
+.acc-bar{display:flex;align-items:center;gap:10px;padding:10px 18px;
+  background:var(--surface);border-radius:99px;border:1px solid var(--border);cursor:pointer;width:100%}
+/* アバター */
+.avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.av-item{font-size:1.8rem;text-align:center;padding:6px;border-radius:8px;
+  cursor:pointer;border:2px solid transparent}
+.av-item:hover{background:var(--surface2)}
+.av-item.sel{border-color:var(--accent);background:rgba(88,166,255,.15)}
+/* ランク */
+.rank-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;
+  border-radius:99px;border:2px solid;font-weight:700;font-size:1.1rem}
+.rp-bar-bg{background:var(--surface2);border-radius:99px;height:12px;overflow:hidden;width:100%}
+.rp-bar-fill{height:100%;border-radius:99px;transition:width .5s}
+/* タブ */
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{padding:8px 16px;border-radius:99px;border:1.5px solid var(--border);
+  background:transparent;color:var(--text);cursor:pointer;font-size:.95rem}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:700}
+/* チャプターリスト */
+.ch-item{display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--surface2);border-radius:8px;cursor:pointer;
+  border:1.5px solid transparent}
+.ch-item.sel{border-color:var(--accent);background:rgba(88,166,255,.1)}
+.ch-check{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ch-item.sel .ch-check{background:var(--accent);border-color:var(--accent)}
+/* プレイヤーリスト */
+.player-list{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+.pl-card{display:flex;align-items:center;gap:8px;background:var(--surface2);
+  padding:8px 14px;border-radius:8px;font-size:.95rem}
+/* ルームコード */
+.room-code{font-size:2.8rem;font-weight:900;letter-spacing:.2em;
+  color:var(--accent);font-family:monospace;text-align:center}
+/* 問題表示 */
+.q-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%}
+.q-num{font-size:.9rem;color:var(--sub);margin-bottom:8px}
+.q-text{font-size:1.2rem;font-weight:600;line-height:1.6}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.c-item{padding:12px 14px;background:var(--surface2);border-radius:8px;
+  border:1.5px solid var(--border);font-size:.95rem}
+.c-item.ok{border-color:var(--green);background:rgba(63,185,80,.15);color:var(--green)}
+.c-item.ng{border-color:var(--red);background:rgba(248,81,73,.1)}
+/* 早押しボタン */
+.buzz-btn{width:100%;padding:40px;font-size:1.8rem;font-weight:900;
+  border-radius:20px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#58a6ff,#1f6feb);color:#fff;
+  box-shadow:0 8px 32px rgba(88,166,255,.4);animation:bpulse 1.5s infinite}
+@keyframes bpulse{0%,100%{box-shadow:0 8px 32px rgba(88,166,255,.4)}
+  50%{box-shadow:0 12px 48px rgba(88,166,255,.7)}}
+.buzz-btn:active{transform:scale(.95)}
+.buzz-btn:disabled{opacity:.35;cursor:not-allowed;animation:none;box-shadow:none}
+/* 選択肢ボタン */
+.c-btn{width:100%;padding:16px 18px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:1rem;cursor:pointer;
+  text-align:left;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.c-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(88,166,255,.08)}
+.c-btn:disabled{cursor:default}
+.c-btn.ok{border-color:var(--green);background:rgba(63,185,80,.12)}
+.c-btn.ng{border-color:var(--red);background:rgba(248,81,73,.1)}
+.c-idx{width:28px;height:28px;border-radius:6px;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+/* 結果 */
+.result-box{padding:20px;border-radius:16px;text-align:center;width:100%}
+.result-ok{background:rgba(63,185,80,.12);border:1.5px solid var(--green)}
+.result-ng{background:rgba(248,81,73,.1);border:1.5px solid var(--red)}
+.result-icon{font-size:3rem}
+.result-text{font-size:1.3rem;font-weight:700;margin-top:8px}
+.expl{font-size:.88rem;color:var(--sub);margin-top:8px;line-height:1.5}
+/* 早押し表示 */
+.buzzer-box{display:flex;align-items:center;gap:16px;padding:20px;
+  background:rgba(88,166,255,.1);border:1.5px solid var(--accent);border-radius:16px;width:100%}
+/* カットイン */
+.cutin{position:fixed;inset:0;background:rgba(0,0,0,.88);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+  animation:cin .3s ease-out}
+@keyframes cin{from{opacity:0;transform:scale(1.1)}to{opacity:1;transform:scale(1)}}
+.cutin-n{font-size:min(22vw,9rem);font-weight:900;color:var(--accent);
+  text-shadow:0 0 60px rgba(88,166,255,.8);animation:czoom .4s cubic-bezier(.17,.67,.52,1.4);line-height:1}
+@keyframes czoom{from{transform:scale(.3)}to{transform:scale(1)}}
+/* RP ポップアップ */
+.rp-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:2.5rem;font-weight:900;pointer-events:none;
+  animation:rpf 1.5s ease-out forwards;z-index:99}
+@keyframes rpf{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  60%{opacity:1;transform:translate(-50%,-120%) scale(1.2)}
+  100%{opacity:0;transform:translate(-50%,-160%) scale(.8)}}
+/* スピナー */
+.spinner{width:44px;height:44px;border:4px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ランキング */
+.rank-row{display:flex;align-items:center;gap:14px;padding:14px 18px;
+  background:var(--surface);border-radius:12px;border:1px solid var(--border);width:100%}
+/* レスポンシブ */
+@media(max-width:480px){
+  .choices{grid-template-columns:1fr}
+  .buzz-btn{padding:28px;font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
